@@ -4,6 +4,7 @@ from flask import Flask
 from marshmallow.exceptions import ValidationError
 
 from init import db, ma, bcrypt, jwt
+from controllers.cli_controllers import db_commands
 
 
 
@@ -19,6 +20,9 @@ def create_app():
     bcrypt.init_app(app)
     jwt.init_app(app)
 
+
+    
+    app.register_blueprint(db_commands)
 
     return app
 
