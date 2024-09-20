@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 
 from init import db, ma, bcrypt
 from marshmallow import fields
-from marshmallow.validate import Regexp
+from marshmallow.validate import Regexp, Length
 
 class User(db.Model):
     # The name of the table
@@ -13,7 +13,7 @@ class User(db.Model):
     username = db.Column(db.String(255), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    create_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships of the table
 
@@ -29,15 +29,24 @@ class User(db.Model):
 
 class UserSchema(ma.Schema):
 
-
     email = fields.String(required=True, validate=Regexp("^\S+@\S+\.\S+$", error="Invalid Email Format."))
 
+    # Password validation
+    password = fields.String(
+        required=True,
+        validate=Length(min=6, error="Password should be at least 6 characters long"),
+        # This will ensure that the password is only used for input and not output
+        load_only=True  
+    )
+    created_at = fields.DateTime(format='%Y-%m-%d %H:%M:%S')
+
     class Meta:
-        fields = ("id", "username", "email", "password_hash", "create_at")
+        fields = ("id", "username", "email", "created_at")
+        load_only = ["password"]
 
 
 # to handle a single user object
-user_schema = UserSchema(exclude=["password_hash"])
+user_schema = UserSchema()
 
 # to handle a list of user objects
-users_schema = UserSchema(many=True, exclude=["password_hash"])
+users_schema = UserSchema(many=True)
