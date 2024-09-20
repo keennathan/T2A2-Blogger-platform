@@ -4,6 +4,8 @@ from init import db, ma, bcrypt
 from marshmallow import fields
 from marshmallow.validate import Regexp, Length
 
+from models.roles import RoleSchema
+
 class User(db.Model):
     # The name of the table
     __tablename__ = "users"  
@@ -16,7 +18,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships of the table
-
+    roles = db.relationship('Role', secondary='user_role', back_populates='users')
 
     # To set a password
     def set_password(self, password):
@@ -25,6 +27,10 @@ class User(db.Model):
     #To check the password
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
+    
+    # To check if user has a specific role
+    def has_role(self, role_name):
+        return any(role.role_name == role_name for role in self.roles)
     
 
 class UserSchema(ma.Schema):
@@ -40,8 +46,10 @@ class UserSchema(ma.Schema):
     )
     created_at = fields.DateTime(format='%Y-%m-%d %H:%M:%S')
 
+    roles = fields.Nested(RoleSchema, many=True)
+
     class Meta:
-        fields = ("id", "username", "email", "created_at")
+        fields = ("id", "username", "email", "created_at", "roles")
         load_only = ["password"]
 
 

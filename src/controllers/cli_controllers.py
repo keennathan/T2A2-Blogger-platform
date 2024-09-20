@@ -2,6 +2,7 @@ from flask import Blueprint
 
 from init import db, bcrypt
 from models.user import User
+from models.roles import Role, UserRole
 
 db_commands = Blueprint("db", __name__)
 
@@ -33,6 +34,19 @@ def seed_tables():
 
     # Add the users to the session
     db.session.add_all(users)
+
+    # Creating the roles
+    role_names = ['Super Admin', 'Admin', 'Author', 'Reader']
+    roles = []
+
+    for role_name in role_names:
+        role = Role(role_name=role_name)
+        roles.append(role)
+
+    db.session.add_all(roles)
+
+    user1.roles.append(roles[0])
+    user2.roles.append(roles[2])
 
     # Commit the changes
     db.session.commit()

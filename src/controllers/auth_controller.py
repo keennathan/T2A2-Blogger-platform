@@ -3,6 +3,7 @@ from datetime import timedelta
 from flask import Blueprint, request, jsonify
 
 from models.user import User, user_schema, users_schema,  UserSchema
+from models.roles import Role, UserRole
 from init import bcrypt, db
 
 from sqlalchemy import select
@@ -29,6 +30,14 @@ def register_user():
         # Create a new user
         new_user = User(username=username, email=email)
         new_user.set_password(password)
+
+        author_role = db.session.execute(select(Role).where(Role.role_name == 'Author')).scalar_one()
+        reader_role = db.session.execute(select(Role).where(Role.role_name == 'Reader')).scalar_one()
+
+        # Assign default roles to the new user
+        new_user.roles.append(author_role)
+        new_user.roles.append(reader_role)
+
         db.session.add(new_user)
         db.session.commit()
 
