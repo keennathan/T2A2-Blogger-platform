@@ -11,7 +11,7 @@ class User(db.Model):
     __tablename__ = "users"  
 
     # Attributes of the table
-    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(255), unique=True, nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
@@ -49,7 +49,7 @@ class UserSchema(ma.Schema):
     roles = fields.Nested(RoleSchema, many=True)
 
     class Meta:
-        fields = ("id", "username", "email", "created_at", "roles")
+        fields = ("user_id", "username", "email", "created_at", "roles")
         load_only = ["password"]
 
 

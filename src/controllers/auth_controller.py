@@ -44,7 +44,7 @@ def register_user():
         # Serialise the new user
         result = user_schema.dump(new_user)
 
-        access_token = create_access_token(identity=new_user.id, expires_delta=timedelta(days=1))
+        access_token = create_access_token(identity=new_user.user_id, expires_delta=timedelta(days=1))
 
         return jsonify({'message': 'User registered successfully!', 'user': result, 'access_token': access_token}), 201
     
@@ -74,11 +74,10 @@ def login_user():
     # If the user exists and the password is correct
     if user and bcrypt.check_password_hash(user.password_hash, body_data.get("password")):
         # Create the JWT
-        access_token = create_access_token(identity=str(user.id), expires_delta=timedelta(days=1))
+        access_token = create_access_token(identity=str(user.user_id), expires_delta=timedelta(days=1))
         # Responce
         return jsonify({
             'message': 'User login successfully!', 
-            'user': {'id': user.id, 'email': user.email},
             'access_token': access_token
         }), 200
     # If login fails, return an error message
