@@ -1,11 +1,11 @@
 import os
 
 from flask import Flask
-from marshmallow.exceptions import ValidationError
 
 from init import db, ma, bcrypt, jwt
 from controllers.cli_controllers import db_commands
 from controllers.auth_controller import auth_bp
+from controllers.blog_controller import blog_bp
 
 
 
@@ -25,6 +25,7 @@ def create_app():
     
     app.register_blueprint(db_commands)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(blog_bp)
 
     return app
 

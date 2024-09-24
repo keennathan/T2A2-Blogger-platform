@@ -2,7 +2,8 @@ from flask import Blueprint
 
 from init import db, bcrypt
 from models.user import User
-from models.roles import Role, UserRole
+from models.roles import Role
+from models.blog import Blogs
 
 db_commands = Blueprint("db", __name__)
 
@@ -47,6 +48,27 @@ def seed_tables():
 
     user1.roles.append(roles[0])
     user2.roles.append(roles[1])
+
+    # Create the test blogs
+    blog1 = Blogs(
+            title="First Blog Post",
+            content="This is the content of the first blog post.",
+            status="published",
+            user=user1)
+    blog2 = Blogs(
+        title="Second Blog Post",
+        content="This is the content of the second blog post.",
+        status="draft",
+        user=user2)
+    blog3 = Blogs(
+        title="Third Blog Post",
+        content="This is the content of the third blog post.",
+        status="published",
+        user=user2)
+    # Add the blogs to the session
+    db.session.add(blog1)
+    db.session.add(blog2)
+    db.session.add(blog3)
 
     # Commit the changes
     db.session.commit()
