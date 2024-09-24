@@ -46,7 +46,7 @@ def seed_tables():
     db.session.add_all(roles)
 
     user1.roles.append(roles[0])
-    user2.roles.append(roles[2])
+    user2.roles.append(roles[1])
 
     # Commit the changes
     db.session.commit()

@@ -38,19 +38,22 @@ class UserSchema(ma.Schema):
     email = fields.String(required=True, validate=Regexp("^\S+@\S+\.\S+$", error="Invalid Email Format."))
 
     # Password validation
-    password = fields.String(
+    new_password = fields.String(
         required=True,
         validate=Length(min=6, error="Password should be at least 6 characters long"),
         # This will ensure that the password is only used for input and not output
         load_only=True  
     )
+
+    old_password = fields.String(load_only=True)
+
     created_at = fields.DateTime(format='%Y-%m-%d %H:%M:%S')
 
     roles = fields.Nested(RoleSchema, many=True)
 
     class Meta:
-        fields = ("user_id", "username", "email", "created_at", "roles")
-        load_only = ["password"]
+        fields = ("user_id", "username", "email", "created_at", "roles", "new_password", "old_password")
+        load_only = ["new_password", "old_password"]
 
 
 # to handle a single user object
