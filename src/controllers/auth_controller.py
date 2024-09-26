@@ -3,7 +3,7 @@ from datetime import timedelta
 from flask import Blueprint, request, jsonify
 
 from models.user import User, user_schema, users_schema,  UserSchema
-from models.roles import Role, UserRole
+from models.roles import Role
 from init import bcrypt, db
 
 from sqlalchemy import select
@@ -64,29 +64,32 @@ def register_user():
 # User login route
 @auth_bp.route("/login", methods=["POST"])
 def login_user():
-    # Get the data from the body of the request
-    body_data = request.get_json()
+    try:
+        # Get the data from the body of the request
+        body_data = request.get_json()
 
-    # Make sure the request contains email and password
-    if not body_data or not body_data.get("email") or not body_data.get("password"):
-        return jsonify({'message': 'Email and password are required.'}), 400
+        # Make sure the request contains email and password
+        if not body_data or not body_data.get("email") or not body_data.get("password"):
+            return jsonify({'message': 'Email and password are required.'}), 400
 
-    # Find the user in the database with thier email
-    stmt = db.select(User).filter_by(email=body_data.get("email"))
-    user = db.session.scalar(stmt)
-    # If the user exists and the password is correct
-    if user and bcrypt.check_password_hash(user.password_hash, body_data.get("password")):
-        # Create the JWT
-        access_token = create_access_token(identity=user.user_id, expires_delta=timedelta(days=1))
-        # Responce
-        return jsonify({
-            'message': 'User login successfully!', 
-            'access_token': access_token
-        }), 200
-    # If login fails, return an error message
-    else:
-        return jsonify({'message': 'Invalid email or password'}), 401
-    
+        # Find the user in the database with thier email
+        stmt = db.select(User).filter_by(email=body_data.get("email"))
+        user = db.session.scalar(stmt)
+        # If the user exists and the password is correct
+        if user and bcrypt.check_password_hash(user.password_hash, body_data.get("password")):
+            # Create the JWT
+            access_token = create_access_token(identity=user.user_id, expires_delta=timedelta(days=1))
+            # Responce
+            return jsonify({
+                'message': 'User login successfully!', 
+                'access_token': access_token
+            }), 200
+        # If login fails, return an error message
+        else:
+            return jsonify({'message': 'Invalid email or password'}), 401
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @auth_bp.route('/users', methods=['GET'])
 # @jwt_required()

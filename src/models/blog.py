@@ -18,6 +18,7 @@ class Blogs(db.Model):
 
     # Relationships of the table
     user = db.relationship("User", back_populates="blogs")
+    likes = db.relationship("Likes", back_populates="blogs")
 
 
 

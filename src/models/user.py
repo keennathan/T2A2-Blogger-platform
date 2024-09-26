@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
 
+from models.roles import RoleSchema
 from init import db, ma, bcrypt
+
 from marshmallow import fields
 from marshmallow.validate import Regexp, Length
 
-from models.roles import RoleSchema
 
+# User table model
 class User(db.Model):
     # The name of the table
     __tablename__ = "users"  
@@ -20,6 +22,7 @@ class User(db.Model):
     # Relationships of the table
     roles = db.relationship('Role', secondary='user_role', back_populates='users')
     blogs = db.relationship('Blogs', back_populates='user', lazy='dynamic')
+    likes = db.relationship('Likes', back_populates='user')
 
     # To set a password
     def set_password(self, password):
