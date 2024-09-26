@@ -39,8 +39,8 @@ def add_like():
 
         return jsonify({"message": "Like added"}), 201
     
-    except ValidationError as val:
-        return jsonify({"error": val.messages}), 400
+    except ValidationError as ve:
+        return jsonify({"error": ve.messages}), 400
     except IntegrityError:
         db.session.rollback()
         return jsonify({"error": "Invalid blog_id"}), 400

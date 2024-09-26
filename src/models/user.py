@@ -20,7 +20,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     # Relationships of the table
-    roles = db.relationship('Role', secondary='user_role', back_populates='users')
+    roles = db.relationship('Role', secondary='user_role', back_populates='user')
     blogs = db.relationship('Blogs', back_populates='user', lazy='dynamic')
     likes = db.relationship('Likes', back_populates='user')
 

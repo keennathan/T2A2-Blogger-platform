@@ -14,6 +14,7 @@ class Blogs(db.Model):
     status = db.Column(db.String(50), nullable=False, default="draft")
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at = db.Column(db.DateTime, onupdate=lambda: datetime.now(timezone.utc))
+    
     user_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), nullable=False)
 
     # Relationships of the table

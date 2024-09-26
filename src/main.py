@@ -7,6 +7,7 @@ from controllers.cli_controllers import db_commands
 from controllers.auth_controller import auth_bp
 from controllers.blog_controller import blog_bp
 from controllers.likes_controller import likes_bp
+from controllers.roles_controller import roles_bp
 
 
 
@@ -28,6 +29,7 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(blog_bp)
     app.register_blueprint(likes_bp)
+    app.register_blueprint(roles_bp)
 
     return app
 

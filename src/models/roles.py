@@ -8,7 +8,7 @@ class Role(db.Model):
     role_name = db.Column(db.String(255), unique=True, nullable=False)
 
     # Relationship to user through userRole
-    users = db.relationship('User', secondary='user_role', back_populates='roles')
+    user = db.relationship('User', secondary='user_role', back_populates='roles')
 
 class UserRole(db.Model):
     __tablename__ = "user_role"
@@ -19,3 +19,8 @@ class UserRole(db.Model):
 class RoleSchema(Schema):
     role_id = fields.Int()
     role_name = fields.Str()
+
+# initilise the schemas
+role_schema = RoleSchema()
+roles_schema = RoleSchema(many=True)
+    

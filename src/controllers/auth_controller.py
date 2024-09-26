@@ -102,7 +102,7 @@ def get_users():
     result = users_schema.dump(users)
     return jsonify(result), 200
 
-# Updating a user route
+# Updating a user 
 @auth_bp.route('/users', methods=['PUT', 'PATCH'])
 @jwt_required()
 def update_user():
