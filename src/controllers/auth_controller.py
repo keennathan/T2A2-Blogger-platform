@@ -5,6 +5,7 @@ from flask import Blueprint, request, jsonify
 from models.user import User, user_schema, users_schema,  UserSchema
 from models.roles import Role
 from init import bcrypt, db
+from utils import admin_required
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -92,7 +93,8 @@ def login_user():
         return jsonify({"error": str(e)}), 500
 
 @auth_bp.route('/users', methods=['GET'])
-# @jwt_required()
+@jwt_required()
+@admin_required
 def get_users():
     # Use session.execute with the select() construct
     stmt = select(User)

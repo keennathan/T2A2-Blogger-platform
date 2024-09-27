@@ -23,6 +23,7 @@ class User(db.Model):
     roles = db.relationship('Role', secondary='user_role', back_populates='user')
     blogs = db.relationship('Blogs', back_populates='user', lazy='dynamic')
     likes = db.relationship('Likes', back_populates='user')
+    comments = db.relationship('Comments', back_populates='user')
 
     # To set a password
     def set_password(self, password):

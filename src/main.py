@@ -8,7 +8,7 @@ from controllers.auth_controller import auth_bp
 from controllers.blog_controller import blog_bp
 from controllers.likes_controller import likes_bp
 from controllers.roles_controller import roles_bp
-
+from controllers.comment_controller import comments_bp
 
 
 def create_app():
@@ -22,14 +22,14 @@ def create_app():
     ma.init_app(app)
     bcrypt.init_app(app)
     jwt.init_app(app)
-
-
+    
     
     app.register_blueprint(db_commands)
     app.register_blueprint(auth_bp)
     app.register_blueprint(blog_bp)
     app.register_blueprint(likes_bp)
     app.register_blueprint(roles_bp)
+    app.register_blueprint(comments_bp)
 
     return app
 
