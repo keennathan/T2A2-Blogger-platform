@@ -9,6 +9,7 @@ from controllers.blog_controller import blog_bp
 from controllers.likes_controller import likes_bp
 from controllers.roles_controller import roles_bp
 from controllers.comment_controller import comments_bp
+from controllers.category_controller import category_bp
 
 
 def create_app():
@@ -30,6 +31,7 @@ def create_app():
     app.register_blueprint(likes_bp)
     app.register_blueprint(roles_bp)
     app.register_blueprint(comments_bp)
+    app.register_blueprint(category_bp)
 
     return app
 

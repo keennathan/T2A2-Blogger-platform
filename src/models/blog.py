@@ -21,7 +21,7 @@ class Blogs(db.Model):
     user = db.relationship("User", back_populates="blogs")
     likes = db.relationship("Likes", back_populates="blogs")
     comments = db.relationship("Comments", back_populates="blogs")
-
+    categories = db.relationship('Category', secondary='blog_category', back_populates="blogs")
 
 
 class BlogSchema(ma.Schema):
