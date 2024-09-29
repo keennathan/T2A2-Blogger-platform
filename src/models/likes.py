@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
 
-from init import db
+from init import db, ma
 
-from marshmallow import fields, Schema
+from marshmallow import fields
 
 # Likes table model
 class Likes(db.Model):
@@ -16,7 +16,7 @@ class Likes(db.Model):
     blogs = db.relationship('Blogs', back_populates='likes')
 
 # Marshmellow schema for serialisation and validation
-class LikesSchema(Schema):
+class LikesSchema(ma.Schema):
     user_id = fields.Integer(required=True)
     blog_id = fields.Integer(required=True)
     created_at = fields.DateTime(dump_only=True)

@@ -1,4 +1,4 @@
-from init import db
+from init import db, ma
 from models.blog import BlogSchema, Blogs
 
 from marshmallow import fields, Schema

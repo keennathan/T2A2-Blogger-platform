@@ -1,4 +1,4 @@
-from init import db
+from init import db, ma
 
 from marshmallow import fields, Schema
 
@@ -16,7 +16,7 @@ class UserRole(db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.role_id'), primary_key=True)
 
 
-class RoleSchema(Schema):
+class RoleSchema(ma.Schema):
     role_id = fields.Int()
     role_name = fields.Str()
 

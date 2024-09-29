@@ -3,10 +3,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from init import db
 from utils import admin_required
-from models.category import Category, categories_schema, category_schema, CategorySchema
+from models.category import Category, categories_schema, category_schema
 from models.blog import Blogs
 from models.user import User
-from models.blog import Blogs
 
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError

@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from init import db, ma, bcrypt
-from marshmallow import fields, Schema, validate
+from marshmallow import fields, validate
 
 class Blogs(db.Model):
     # Name of the table 
@@ -22,7 +22,7 @@ class Blogs(db.Model):
     likes = db.relationship("Likes", back_populates="blogs")
     comments = db.relationship("Comments", back_populates="blogs")
     categories = db.relationship('Category', secondary='blog_category', back_populates="blogs")
-
+    media = db.relationship('Media', back_populates='blog', cascade="all, delete-orphan")
 
 class BlogSchema(ma.Schema):
     # Title validation
