@@ -4,6 +4,25 @@ from init import db, ma, bcrypt
 from marshmallow import fields, validate
 
 class Blogs(db.Model):
+    """
+    Represents a blog post in the database.
+
+    Attributes:
+        blog_id (int): The primary key for the blog post.
+        title (str): The title of the blog post.
+        content (str): The content of the blog post.
+        status (str): The status of the blog post (e.g., "draft", "published").
+        created_at (datetime): The timestamp when the blog post was created.
+        updated_at (datetime): The timestamp when the blog post was last updated.
+        user_id (int): The foreign key linking to the User who owns the blog post.
+
+    Relationships:
+        user (User): The user who authored the blog post.
+        likes (Likes): The likes associated with the blog post.
+        comments (Comments): The comments associated with the blog post.
+        categories (Category): The categories associated with the blog post (many-to-many).
+        media (Media): The media files associated with the blog post.
+    """
     # Name of the table 
     __tablename__ = "blogs"
 
@@ -25,6 +44,23 @@ class Blogs(db.Model):
     media = db.relationship('Media', back_populates='blog', cascade="all, delete-orphan")
 
 class BlogSchema(ma.Schema):
+    """
+    Schema for validating and serialising Blog objects.
+
+    Validations:
+        - title: Must be at least 5 characters long.
+        - content: Must be at least 20 characters long.
+        - status: Must be either "draft" or "published".
+    
+    Fields:
+        - blog_id: The unique ID of the blog post.
+        - title: The title of the blog post.
+        - content: The content of the blog post.
+        - status: The status of the blog post.
+        - created_at: The date and time when the blog was created (read-only).
+        - updated_at: The date and time when the blog was last updated (read-only).
+        - user: A nested representation of the user who created the blog.
+    """
     # Title validation
     title = fields.String(required=True, validate=validate.Length(min=5, error="Title must be at least 5 characters long."))
     # Validate that content is not empty

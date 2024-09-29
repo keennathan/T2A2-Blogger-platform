@@ -13,6 +13,13 @@ roles_bp = Blueprint('roles', __name__, url_prefix='/roles')
 # Read all the roles
 @roles_bp.route('/', methods=['GET'])
 def get_roles():
+    """
+    Retrieves all roles from the database.
+
+    Returns:
+        - 200: List of roles.
+        - 500: If an error occurs while retrieving roles.
+    """
     try:
         stmt = select(Role)
         roles = db.session.execute(stmt).scalars().all()
@@ -28,6 +35,18 @@ def get_roles():
 @jwt_required()
 @admin_required
 def assign_role():
+    """
+    Assigns a role to a user. Only Admin or Super Admin can assign roles.
+
+    Expects:
+        - JSON request with "user_id" and "role_id".
+    
+    Returns:
+        - 200: If the role is successfully assigned.
+        - 400: If user_id or role_id is missing, or if the user already has the role.
+        - 404: If the user or role is not found.
+        - 500: If an error occurs while assigning the role.
+    """
     try:
         data = request.get_json()
         user_id = data.get("user_id")
@@ -52,6 +71,7 @@ def assign_role():
         if user.has_role(role.role_name):
             return jsonify({"error": "User already has this role"}), 400
         
+        # Assign the role to the user
         user.roles.append(role)
         db.session.commit()
 
@@ -61,11 +81,22 @@ def assign_role():
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
     
-# CREATE a new role (admin only)
+# Create a new role (admin only)
 @roles_bp.route('/', methods=['POST'])
 @jwt_required()
 @admin_required
 def create_role():
+    """
+    Creates a new role. Only Admin or Super Admin can create roles.
+
+    Expects:
+        - JSON request with "role_name".
+    
+    Returns:
+        - 201: If the role is successfully created.
+        - 400: If role_name is missing or the role already exists.
+        - 500: If an error occurs while creating the role.
+    """
     try:
         data = request.get_json()
         role_name = data.get("role_name")
@@ -98,6 +129,21 @@ def create_role():
 @jwt_required()
 @admin_required
 def update_role(role_id):
+    """
+    Updates an existing role. Only Admin or Super Admin can update roles.
+
+    Expects:
+        - JSON request with "role_name".
+    
+    Args:
+        role_id (int): The ID of the role to be updated.
+    
+    Returns:
+        - 200: If the role is successfully updated.
+        - 400: If role_name is missing or the new role name already exists.
+        - 404: If the role is not found.
+        - 500: If an error occurs while updating the role.
+    """
     try:
         stmt = select(Role).where(Role.role_id == role_id)
         role = db.session.execute(stmt).scalar_one_or_none()
@@ -135,6 +181,17 @@ def update_role(role_id):
 @jwt_required()
 @admin_required
 def delete_role(role_id):
+    """
+    Deletes an existing role. Only Admin or Super Admin can delete roles.
+
+    Args:
+        role_id (int): The ID of the role to be deleted.
+    
+    Returns:
+        - 200: If the role is successfully deleted.
+        - 404: If the role is not found.
+        - 500: If an error occurs while deleting the role.
+    """
     try:
         stmt = select(Role).where(Role.role_id == role_id)
         role = db.session.execute(stmt).scalar_one_or_none()

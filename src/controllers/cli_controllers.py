@@ -7,17 +7,33 @@ from models.roles import Role
 from models.blog import Blogs
 from models.category import Category
 
+# Define a Blueprint for database commands
 db_commands = Blueprint("db", __name__)
 
 # To create tables
 @db_commands.cli.command("create")
 def create_tables():
+    """
+    Creates all the tables defined in the models.
+    This is typically used when setting up a new database.
+    """
     db.create_all()
     print ("Tables created")
 
-# To seed the tables
+# To seed the tables with initial data
 @db_commands.cli.command("seed")
 def seed_tables():
+    """
+    Seeds the database with initial data for users, roles, blogs, and categories.
+
+    This command creates:
+    - Two initial users (John and Pam).
+    - Four roles (Super Admin, Admin, Author, Reader).
+    - Three blogs associated with the users.
+    - Several categories (Technology, Lifestyle, Travel, etc.).
+    
+    Blogs are linked to specific categories as part of the seeding process.
+    """
     try:
         # Create the user instance
         user1 = User(
@@ -49,6 +65,7 @@ def seed_tables():
 
         db.session.add_all(roles)
 
+        # Assign roles to users
         user1.roles.append(roles[0])
         user2.roles.append(roles[1])
 
@@ -99,8 +116,12 @@ def seed_tables():
         db.session.rollback()
         print(f"Error seeding the tables: {e}")
 
-# To drop the tables
+# To drop the tables in the database
 @db_commands.cli.command("drop")
 def drop_tables():
+    """
+    Drops all the tables from the database.
+    This command is useful for resetting the database.
+    """
     db.drop_all()
     print ("Tables dropped")

@@ -7,6 +7,19 @@ from marshmallow.validate import Regexp, Length
 
 # Create media table
 class Media(db.Model):
+    """
+    Represents a media file associated with a blog post in the database.
+
+    Attributes:
+        media_id (int): The primary key for the media entry.
+        media_url (str): The URL of the media file.
+        media_type (str): The type of the media (e.g., 'image', 'video', 'audio').
+        created_at (datetime): The timestamp when the media was uploaded.
+        blog_id (int): The foreign key linking to the Blog that the media belongs to.
+
+    Relationships:
+        blog (Blogs): The blog post the media is associated with.
+    """
     # The name of the table
     __tablename__ = "media"
 
@@ -22,6 +35,20 @@ class Media(db.Model):
 
 
 class MediaSchema(ma.Schema):
+    """
+    Schema for validating and serialising Media objects.
+
+    Validations:
+        - media_url: Must be a valid URL with a maximum length of 255 characters.
+        - media_type: Must be either 'image', 'video', or 'audio'.
+    
+    Fields:
+        media_url (str): The URL of the media file (required).
+        media_type (str): The type of the media file (required).
+        blog_id (int): The ID of the blog the media is associated with (required).
+        created_at (datetime): The timestamp when the media was created (read-only).
+    """
+    # Validation for media URL and type
     media_url = fields.String(required=True, validate=Length(max=255))
     media_type = fields.String(required=True, validate=Regexp(r'^(image|video|audio)$', error="Invalid media type"))
     blog_id = fields.Integer(required=True)

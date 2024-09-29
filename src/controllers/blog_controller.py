@@ -16,6 +16,18 @@ blog_bp = Blueprint('blogs', __name__, url_prefix='/blogs')
 @blog_bp.route("/", methods=["POST"])
 @jwt_required()
 def create_blog():
+    """
+    Creates a new blog post in the system.
+    
+    Only users with the 'Author', 'Admin', or 'Super Admin' roles can create blogs.
+    
+    Returns:
+        - 201: Blog created successfully.
+        - 403: If the user does not have permission to create a blog.
+        - 404: If the current user is not found.
+        - 400: If validation errors occur with the request data.
+        - 500: If an integrity error or other server error occurs.
+    """
     try:
         # Get the current user from JWT
         current_user_id = get_jwt_identity()
@@ -57,6 +69,17 @@ def create_blog():
 @blog_bp.route('/status/<string:status>', methods=['GET'])
 @jwt_required()
 def get_blogs_by_status(status):
+    """
+    Retrieves blogs filtered by their status.
+    
+    Args:
+        status (str): The status of the blogs to retrieve (e.g., 'published', 'draft').
+    
+    Returns:
+        - 200: Blogs retrieved successfully.
+        - 404: If no blogs with the given status are found.
+        - 500: For any other server errors.
+    """
     try:
         # select blogs by status
         stmt = select(Blogs).where(Blogs.status == status)
@@ -76,6 +99,17 @@ def get_blogs_by_status(status):
 @jwt_required()
 def get_blogs_by_user(user_id):
     try:
+        """
+    Retrieves all blogs created by a specific user.
+    
+    Args:
+        user_id (int): The ID of the user whose blogs are to be retrieved.
+    
+    Returns:
+        - 200: Blogs retrieved successfully.
+        - 404: If the user or their blogs are not found.
+        - 500: For any other server errors.
+    """
         # Select the user by user_id
         stmt = select(User).where(User.user_id == user_id)
         user = db.session.execute(stmt).scalar_one_or_none()
@@ -100,6 +134,17 @@ def get_blogs_by_user(user_id):
 @jwt_required()
 def get_blog(blog_id):
     try:
+        """
+    Retrieves a single blog by its ID.
+    
+    Args:
+        blog_id (int): The ID of the blog to retrieve.
+    
+    Returns:
+        - 200: Blog retrieved successfully.
+        - 404: If the blog is not found.
+        - 500: For any other server errors.
+    """
         # create the select statement 
         stmt = select(Blogs).where(Blogs.blog_id == blog_id)
         result = db.session.execute(stmt).scalar()
@@ -117,6 +162,21 @@ def get_blog(blog_id):
 @blog_bp.route('/<int:blog_id>', methods=['PUT', 'PATCH'])
 @jwt_required()
 def update_blog(blog_id):
+    """
+    Updates a blog post.
+    
+    Only the author of the blog or users with 'Admin' or 'Super Admin' roles can update the blog.
+    
+    Args:
+        blog_id (int): The ID of the blog to update.
+    
+    Returns:
+        - 200: Blog updated successfully.
+        - 403: If the user does not have permission to update the blog.
+        - 404: If the blog or current user is not found.
+        - 400: If validation errors occur with the request data.
+        - 500: For any other server errors.
+    """
     try:
         # Get the user from JWT
         current_user_id = get_jwt_identity()
@@ -161,6 +221,20 @@ def update_blog(blog_id):
 @blog_bp.route('/<int:blog_id>', methods=['DELETE'])
 @jwt_required()
 def delete_blog(blog_id):
+    """
+    Deletes a blog post.
+    
+    Only the author of the blog or users with 'Admin' or 'Super Admin' roles can delete the blog.
+    
+    Args:
+        blog_id (int): The ID of the blog to delete.
+    
+    Returns:
+        - 200: Blog deleted successfully.
+        - 403: If the user does not have permission to delete the blog.
+        - 404: If the blog or current user is not found.
+        - 500: For any other server errors.
+    """
     try:
         # Get the user from JWT
         current_user_id = get_jwt_identity()
@@ -190,6 +264,7 @@ def delete_blog(blog_id):
                 db.session.delete(blog)
                 db.session.commit()
                 return jsonify({"message": "Blog deleted successfully"}), 200
+            
         # Admins and super admins can delete any blog
         elif current_user.has_role("Admin") or current_user.has_role("Super Admin"):
             db.session.delete(blog)

@@ -13,11 +13,25 @@ from psycopg2 import errorcodes
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from marshmallow import ValidationError
 
+# Define a blueprint for authentication-related routes
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 # Registering a user route
 @auth_bp.route('/register', methods=['POST'])
 def register_user():
+    """
+    Registers a new user in the system.
+
+    Expects a JSON request body with 'username', 'email', and 'password'.
+    Automatically assigns the user 'Author' and 'Reader' roles.
+    Returns a success message, the registered user's data, and a JWT token on successful registration.
+    
+    Returns:
+        - 201 on success with user data and token.
+        - 409 if the email is already registered.
+        - 400 if there are database constraint violations (e.g., unique or not-null violations).
+        - 500 for any other server errors.
+    """
     try:
         body_data = request.get_json()
         username = body_data.get('username')
@@ -33,20 +47,20 @@ def register_user():
         # Create a new user
         new_user = User(username=username, email=email)
         new_user.set_password(password)
-
+        # Assign 'Author' and 'Reader' roles to the new user
         author_role = db.session.execute(select(Role).where(Role.role_name == 'Author')).scalar_one()
         reader_role = db.session.execute(select(Role).where(Role.role_name == 'Reader')).scalar_one()
-
-        # Assign default roles to the new user
         new_user.roles.append(author_role)
         new_user.roles.append(reader_role)
 
+        # Save the new user to the database
         db.session.add(new_user)
         db.session.commit()
 
         # Serialise the new user
         result = user_schema.dump(new_user)
 
+        # Generate a JWT token for the new user
         access_token = create_access_token(identity=new_user.user_id, expires_delta=timedelta(days=1))
 
         return jsonify({'message': 'User registered successfully!', 'user': result, 'access_token': access_token}), 201
@@ -65,6 +79,18 @@ def register_user():
 # User login route
 @auth_bp.route("/login", methods=["POST"])
 def login_user():
+    """
+    Authenticates a user and provides a JWT token if the credentials are valid.
+
+    Expects a JSON request body with 'email' and 'password'.
+    Returns a JWT token on successful login.
+
+    Returns:
+        - 200 on successful login with JWT token.
+        - 400 if the email or password is not provided.
+        - 401 if the credentials are incorrect.
+        - 500 for any other server errors.
+    """
     try:
         # Get the data from the body of the request
         body_data = request.get_json()
@@ -76,6 +102,7 @@ def login_user():
         # Find the user in the database with thier email
         stmt = db.select(User).filter_by(email=body_data.get("email"))
         user = db.session.scalar(stmt)
+
         # If the user exists and the password is correct
         if user and bcrypt.check_password_hash(user.password_hash, body_data.get("password")):
             # Create the JWT
@@ -96,18 +123,48 @@ def login_user():
 @jwt_required()
 @admin_required
 def get_users():
-    # Use session.execute with the select() construct
-    stmt = select(User)
-    users = db.session.execute(stmt).scalars().all()
+    """
+    Retrieves a list of all registered users.
+
+    Requires admin privileges and a valid JWT token.
+
+    Returns:
+        - 200 on success with a list of all users.
+    """
+    try:
+        # Use session.execute with the select() construct
+        stmt = select(User)
+        users = db.session.execute(stmt).scalars().all()
+        
+        # Serialise the list of users
+        result = users_schema.dump(users)
+        return jsonify(result), 200
     
-    # Serialise the list of users
-    result = users_schema.dump(users)
-    return jsonify(result), 200
+    except ValidationError as err:
+        return jsonify({"error": err.messages}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 
 # Updating a user 
 @auth_bp.route('/users', methods=['PUT', 'PATCH'])
 @jwt_required()
 def update_user():
+    """
+    Updates the authenticated user's information.
+
+    Expects a JSON request body with fields like 'username', 'email', 'old_password', and 'new_password'.
+    If 'email' is provided, it must be unique.
+    If updating the password, 'old_password' is required for validation.
+
+    Returns:
+        - 200 on successful update with the updated user data.
+        - 400 for validation errors (e.g., missing old password for password update).
+        - 403 if the old password is incorrect.
+        - 404 if the user is not found.
+        - 409 if the new email is already in use by another user.
+        - 500 for any other server errors.
+    """
     try:
         # Get the user id from the JWT token
         user_id = get_jwt_identity()
@@ -125,6 +182,7 @@ def update_user():
         if "username" in body_data:
             user.username = body_data["username"]
 
+        # Check and update the user's email if provided
         if "email" in body_data:
             # Check the email is unique
             email_check = db.session.execute(select(User).where(User.email == body_data["email"])).scalar_one_or_none()
@@ -161,6 +219,25 @@ def update_user():
 @auth_bp.route("/users/<int:user_id>", methods=["DELETE"])
 @jwt_required()
 def delete_user(user_id):
+    """
+    Deletes a user from the system.
+
+    The route allows users to delete their own account or, with the correct permissions, to delete other users.
+    
+    Permissions:
+        - A user can delete their own account.
+        - Admins can delete regular users.
+        - Super Admins can delete Admins and Super Admins.
+    
+    Args:
+        user_id (int): The ID of the user to be deleted (passed as a URL parameter).
+    
+    Returns:
+        - 200 on successful deletion with a relevant message.
+        - 403 if the user does not have permission to delete the specified user.
+        - 404 if the current user or the target user does not exist.
+        - 500 for any other server errors.
+    """
     try:
         # Get the user from the JWT token
         current_user_id = get_jwt_identity()

@@ -4,8 +4,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.utils import secure_filename
 
 from init import db
-from utils import admin_required
-from models.category import Category, categories_schema, category_schema, CategorySchema
 from models.blog import Blogs
 from models.media import Media, media_schema, medias_schema
 from models.user import User
@@ -13,6 +11,7 @@ from models.user import User
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 
+# Blueprint for media-related routes
 media_bp = Blueprint("media", __name__, url_prefix="/media")
 
 # Path to the upload folder
@@ -26,12 +25,33 @@ ALLOWED_EXTENSIONS = {
 }
 
 def allowed_file(filename):
+    """
+    Check if the uploaded file has an allowed extension.
+    
+    Args:
+        filename (str): The name of the file.
+    
+    Returns:
+        bool: True if the file is allowed, False otherwise.
+    """
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Upload media file
+# Upload media file to a blog route 
 @media_bp.route('/upload', methods=['POST'])
 @jwt_required()
 def upload_media():
+    """
+    Upload a media file for a specific blog post.
+
+    Requires JWT authentication. The user must be the author of the blog to upload media.
+
+    Returns:
+        - 201: If the media is successfully uploaded and saved.
+        - 400: If the file or blog ID is missing or the file type is not allowed.
+        - 403: If the user does not have permission to upload media for the blog.
+        - 404: If the blog is not found.
+        - 500: If a database or unexpected error occurs.
+    """
     try:
         # Get the current user
         current_user_id = get_jwt_identity()
@@ -82,10 +102,23 @@ def upload_media():
     except Exception as e:
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
-# Get media by id
+# Get media by id route
 @media_bp.route('/<int:media_id>', methods=['GET'])
 @jwt_required()
 def get_media(media_id):
+    """
+    Get media information by its ID.
+
+    Requires JWT authentication.
+
+    Args:
+        media_id (int): The ID of the media file.
+
+    Returns:
+        - 200: If the media is found and returned.
+        - 404: If the media is not found.
+        - 500: If a database or unexpected error occurs.
+    """
     stmt = select(Media).where(Media.media_id == media_id)
     media = db.session.execute(stmt).scalar_one_or_none()
 
@@ -98,6 +131,19 @@ def get_media(media_id):
 @media_bp.route('/blog/<int:blog_id>', methods=['GET'])
 @jwt_required()
 def get_media_by_blog(blog_id):
+    """
+    Get all media associated with a specific blog post.
+
+    Requires JWT authentication.
+
+    Args:
+        blog_id (int): The ID of the blog post.
+
+    Returns:
+        - 200: If media files are found and returned.
+        - 404: If no media is found for the specified blog.
+        - 500: If a database or unexpected error occurs.
+    """
     stmt = select(Media).where(Media.blog_id == blog_id)
     media = db.session.execute(stmt).scalars().all()
 
@@ -110,6 +156,20 @@ def get_media_by_blog(blog_id):
 @media_bp.route('/<int:media_id>', methods=['DELETE'])
 @jwt_required()
 def delete_media(media_id):
+    """
+    Delete a media file by its ID.
+
+    Requires JWT authentication. The user must be the author of the media or have Admin/Super Admin roles.
+
+    Args:
+        media_id (int): The ID of the media file.
+
+    Returns:
+        - 200: If the media file is deleted successfully.
+        - 403: If the user does not have permission to delete the media.
+        - 404: If the media or user is not found.
+        - 500: If a database or unexpected error occurs.
+    """
     try:
         # Get the current user
         current_user_id = get_jwt_identity()
