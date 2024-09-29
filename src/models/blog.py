@@ -38,9 +38,9 @@ class Blogs(db.Model):
 
     # Relationships of the table
     user = db.relationship("User", back_populates="blogs")
-    likes = db.relationship("Likes", back_populates="blogs")
-    comments = db.relationship("Comments", back_populates="blogs")
-    categories = db.relationship('Category', secondary='blog_category', back_populates="blogs")
+    likes = db.relationship("Likes", back_populates="blogs", cascade="all, delete-orphan")
+    comments = db.relationship("Comments", back_populates="blogs", cascade="all, delete-orphan")
+    categories = db.relationship('Category', secondary='blog_category', back_populates="blogs", cascade="all")
     media = db.relationship('Media', back_populates='blog', cascade="all, delete-orphan")
 
 class BlogSchema(ma.Schema):

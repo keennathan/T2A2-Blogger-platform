@@ -147,6 +147,7 @@ def get_likes_for_blog(blog_id):
 
 # Get total likes for a blog
 @likes_bp.route('/count/blog/<int:blog_id>', methods=['GET'])
+@jwt_required
 def get_total_likes_for_blog(blog_id):
     """
     Retrieves the total number of likes for a specific blog.
